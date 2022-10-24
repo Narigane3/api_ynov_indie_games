@@ -6,11 +6,14 @@ use App\Repository\PictureRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
+use Vich\UploaderBundle\Mapping\Annotation\Uploadable;
 
 #[ORM\Entity(repositoryClass: PictureRepository::class)]
 
-#[Vich\Uploadable()]
+/**
+ * @Uploadable()
+ */
 class Picture
 {
     #[ORM\Id]
@@ -39,10 +42,9 @@ class Picture
     private ?string $status = null;
 
     /**
-     * @var file|null
-     * @Vich\uploadableField(mapping="picture", filleNameProperty="realPath)
+     * @UploadableField(mapping="picture", fileNameProperty="realPath")
      */
-    private ?file $file;
+    private  $file;
 
     public function getId(): ?int
     {
@@ -113,7 +115,7 @@ class Picture
     {
         return $this->file;
     }
-    public function setFile(null|File $file): ?Picture
+    public function setFile(?File $file): ?Picture
     {
         $this->file= $file;
         return $this;

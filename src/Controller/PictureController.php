@@ -27,17 +27,27 @@ class PictureController extends AbstractController
     #[Route('api/picture/{idPicture}', name: 'picture.get', methods: ['GET'])]
     public function getPicture(int                 $idPicture,
                                SerializerInterface $serializer,
-                               PictureRepository   $repositor
+                               PictureRepository   $repositor,
+                               Request             $request
     ): JsonResponse
     {
         $picture = $repositor->find($idPicture);
+        $relativePath = $picture->getPublicPath() . "/" . $picture->getRealPath();
+        $location = $request->getUriForPath('/');
+        //$location = $location . str_replace("/assets", "assets", $relativePath);
         if ($picture) {
-            return new JsonResponse($serializer->serialize($picture, 'json', ["groups" => 'getPicture']), JsonResponse::HTTP_OK);
+            return new JsonResponse($serializer->serialize($picture,
+                'json',
+                ["groups" => 'getPicture']),
+                JsonResponse::HTTP_OK,
+                ["Location" => $location],
+                true
+            );
         }
         return new JsonResponse(null, JsonResponse::HTTP_NOT_FOUND);
     }
 
-    #[Route('api/picture', name: 'pictures.creat', methods: ['POST'])]
+    #[Route('api/picture', name: 'pictures.create', methods: ['POST'])]
     public function createPicture(
         Request                $request,
         EntityManagerInterface $entityManager,
@@ -46,21 +56,21 @@ class PictureController extends AbstractController
 
     ): JsonResponse
     {
+        $picture = new Picture();
+
         $file = $request->files->get('file');
-        $picture = new Picture($file);
         $picture->setFile($file);
         $picture->setMineType($file->getClientMimeType());
         $picture->setRealName($file->getClientOriginalName());
         $picture->setPublicPath("/images/picture");
         $picture->setStatus('on');
-        $picture->setRealPath("/");
         $entityManager->persist($picture);
         $entityManager->flush();
         /* return $this->json([
              'message' => 'Welcome to your new controller!',
              'path' => 'src/Controller/PictureController.php',
          ]);*/
-        $location = $urlGenerator->generate('picture.get', ['idPicture' => $picture->getId()]);
+        $location = $urlGenerator->generate('picture.get', ['idPicture' => $picture->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
         $jsonPicture = $serializer->serialize($location, "json", ['getPicture']);
         return new JsonResponse($jsonPicture, Response::HTTP_OK, [], true);
     }
