@@ -53,6 +53,14 @@ class Game
     #[MaxDepth(2)]
     private Collection $comments;
 
+    #[ORM\Column(length: 100, nullable: true, options: ['default' => 'RPG'])]
+    #[Groups(['this_game','all_games','this_comment','all_comment'])]
+    #[Assert\NotBlank(message: "le jeux doit avoir un genre non vide")]
+    #[Assert\Choice(
+        choices: ['RPG', 'MMO', 'HACK-AND-SLASH', 'FPS', 'BATTLE-ROYAL', 'ADVENTURE', 'RACE', 'MUSIC', 'SIMULATION', 'SPORT'], message: "Prend un genre dans une list défini"
+    )]
+    private ?string $genre = null;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -161,6 +169,18 @@ class Game
                 $comment->setFCommentGameId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getGenre(): ?string
+    {
+        return $this->genre;
+    }
+
+    public function setGenre(?string $genre): self
+    {
+        $this->genre = $genre;
 
         return $this;
     }
