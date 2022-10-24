@@ -8,7 +8,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-
+use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: GameRepository::class)]
 class Game
 {
@@ -18,30 +19,38 @@ class Game
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['this_game','get_games'])]
+    #[Groups(['this_game','all_games','this_comment','all_comment'])]
+    #[Assert\NotBlank(message: "le jeux doit avoir un nom")]
+    #[Assert\NotNull]
     private ?string $gameName = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['this_game','get_games'])]
+    #[Groups(['this_game','all_games','this_comment','all_comment'])]
     private ?string $gameCompany = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups(['this_game','get_games'])]
+    #[Groups(['this_game','all_games','this_comment','all_comment'])]
     private ?\DateTimeInterface $gameLaunchDate = null;
 
     #[ORM\Column(length: 512, nullable: true)]
-    #[Groups(['this_game','get_games'])]
+    #[Groups(['this_game','all_games','this_comment','all_comment'])]
     private ?string $gameDescription = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['this_game','get_games'])]
+    #[Groups(['this_game','all_games','this_comment','all_comment'])]
     private ?string $gamePlatform = null;
 
     #[ORM\Column(length: 10)]
+    #[Assert\NotBlank(message: "le status doit être déclaré")]
+    #[Assert\NotNull]
+    #[Assert\Choice(
+        choices: ['on', 'off'],message: "Active ou désactive le msg"
+    )]
     private ?string $status = null;
 
     #[ORM\OneToMany(mappedBy: 'f_commentGameId', targetEntity: Comment::class, orphanRemoval: true)]
-    #[Groups(['this_game','get_games'])]
+    #[Groups(['this_game','all_games'])]
+    #[MaxDepth(2)]
     private Collection $comments;
 
     public function __construct()

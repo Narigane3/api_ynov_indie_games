@@ -45,7 +45,8 @@ class AppFixtures extends Fixture
             $comment
                 ->setCommentText($this->faker->realText(500))
                 ->setCommentUser($this->faker->userName())
-                ->setStatus('on')->setFCommentGameId($gameListe[array_rand($gameListe)]);
+                ->setStatus('on')
+                ->setFCommentGameId($gameListe[array_rand($gameListe)]);
             $manager->persist($comment);
         }
 
