@@ -72,11 +72,12 @@ class GameController extends AbstractController
 
         $game = $serializer->deserialize($request->getContent(), Game::class, 'json');
         $game->setStatus('on');
-        $error = $validator->validate($game);
-        if (count($error) > 0) {
-            dd($error);
-            return new JsonResponse(['message' => $error->get()], Response::HTTP_BAD_REQUEST);
+
+        $errors = $validator->validate($game);
+        if ($errors->count() > 0) {
+            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST);
         }
+
         $entityManager->persist($game);
         $entityManager->flush();
         $location = $urlGenerator->generate('game.get', ['idGame' => $game->getId()]);
