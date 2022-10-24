@@ -16,6 +16,7 @@ class Game
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['this_game','all_games','this_comment','all_comment'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -50,7 +51,6 @@ class Game
 
     #[ORM\OneToMany(mappedBy: 'f_commentGameId', targetEntity: Comment::class, orphanRemoval: true)]
     #[Groups(['this_game','all_games'])]
-    #[MaxDepth(2)]
     private Collection $comments;
 
     #[ORM\Column(length: 100, nullable: true, options: ['default' => 'RPG'])]
