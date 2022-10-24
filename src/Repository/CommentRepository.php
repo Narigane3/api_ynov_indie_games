@@ -63,4 +63,21 @@ class CommentRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    /**
+     * Return all comment has status on if status = 'on'
+     *
+     * @param int $page [page number of result]
+     * @param int $limit [limit of result on response]
+     * @param string $status ['on' or 'off']
+     * @return array
+     */
+    public function findAlLGame($page, $limit, $status){
+        $qb = $this->createQueryBuilder('s');
+        $qb->setFirstResult(($page - 1) * $limit);
+        $qb->setMaxResults($limit);
+        $qb->where("s.status='$status'");
+        return $qb->getQuery()->getResult();
+    }
+
 }

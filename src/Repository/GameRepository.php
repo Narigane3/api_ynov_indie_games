@@ -76,12 +76,12 @@ class GameRepository extends ServiceEntityRepository
 
 
     /**
-     * Return all games has
+     * Return all comment has status on if status = 'on'
      *
-     * @param $page [page number]
-     * @param $limit [limit of result on response]
-     * @param $status [status of publication return]
-     * @return float|int|mixed|string
+     * @param int $page [page number of result]
+     * @param int $limit [limit of result on response]
+     * @param string $status ['on' or 'off']
+     * @return array
      */
     public function findAlLGame($page, $limit, $status){
         $qb = $this->createQueryBuilder('s');
