@@ -72,4 +72,23 @@ class GameRepository extends ServiceEntityRepository
         $qb->setMaxResults($limit);
         return $qb->getQuery()->getResult();
     }
+    // get all data of gamme entity as status value
+
+
+    /**
+     * Return all games has
+     *
+     * @param $page [page number]
+     * @param $limit [limit of result on response]
+     * @param $status [status of publication return]
+     * @return float|int|mixed|string
+     */
+    public function findAlLGame($page, $limit, $status){
+        $qb = $this->createQueryBuilder('s');
+        $qb->setFirstResult(($page - 1) * $limit);
+        $qb->setMaxResults($limit);
+        $qb->where("s.status='$status'");
+        return $qb->getQuery()->getResult();
+    }
+
 }

@@ -27,6 +27,12 @@ class GameController extends AbstractController
     }
     /**************************/
     /*[GET ALL GAME]*/
+    /** Return all games on db
+     * @param GameRepository $repository
+     * @param SerializerInterface $serializer
+     * @param Request $request
+     * @return JsonResponse
+     */
     #[Route ('/game/all', name: 'app_game')]
     public function get_all_games(GameRepository      $repository,
                                   SerializerInterface $serializer,
@@ -35,15 +41,15 @@ class GameController extends AbstractController
         $page = $request->get('page',1);
         $limit = $request->get('limit',5);
         $limit = $limit > 50 ? 20: $limit;
+        $status = $request->get('status', 'on');
         /*dd([
             "page"=> $page,
             "limit"=> $limit
         ]);*/
-        $game = $repository->findAll();
-        $game = $repository->findWithPagination($page,$limit);
+        $game = $repository->findAlLGame($page,$limit,$status);
         // format to json
-        $jsonGmae = $serializer->serialize($game, 'json', ['groups' => 'all_games']);
-        return new JsonResponse($jsonGmae, Response::HTTP_OK, [], true);
+        $jsonGame = $serializer->serialize($game, 'json', ['groups' => 'all_games']);
+        return new JsonResponse($jsonGame, Response::HTTP_OK, [], true);
     }
     /**************************/
     /*[GET THIS GAME]*/
@@ -73,9 +79,8 @@ class GameController extends AbstractController
         $game = $serializer->deserialize($request->getContent(), Game::class, 'json');
         $game->setStatus('on');
         $error = $validator->validate($game);
-        if (count($error) > 0) {
-            dd($error);
-            return new JsonResponse(['message' => $error->get()], Response::HTTP_BAD_REQUEST);
+        if ($error->count() > 0) {
+            return new JsonResponse($serializer->serialize($error,'json'), Response::HTTP_BAD_REQUEST);
         }
         $entityManager->persist($game);
         $entityManager->flush();
