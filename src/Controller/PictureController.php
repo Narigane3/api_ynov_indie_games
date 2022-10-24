@@ -31,8 +31,9 @@ class PictureController extends AbstractController
         $picture->setFile($file);
         $picture->setMineType($file->getClientMimeType());
         $picture->setRealName($file->getClientOriginalName());
-        dd($picture);
+        $picture->setPublicPath(" ");
         $picture->setStatus('on');
+        $picture->setRealPath("/");
         $entityManager->persist($picture);
         $entityManager->flush();
         return $this->json([
