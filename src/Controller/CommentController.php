@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Comment;
 use App\Repository\CommentRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,7 +29,9 @@ class CommentController extends AbstractController
 
     /**************************/
     /*[GET ALL COMMENT]*/
-    #[Route ('/comment/all', name: 'comment_all')]
+    #[Route ('api/comment/all', name: 'comment_all')]
+    #[IsGranted('ROLE_USER', message:'ha ta pas les droits mon potes')]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
     public function get_all_comment(CommentRepository   $repository,
                                     SerializerInterface $serializer): JsonResponse
     {
@@ -40,8 +43,10 @@ class CommentController extends AbstractController
 
     /**************************/
     /*[GET THIS COMMENT]*/
-    #[Route ("/comment/{idComment}", name: "comment.get", methods: ["GET"])]
+    #[Route ("api/comment/{idComment}", name: "comment.get", methods: ["GET"])]
     #[ParamConverter("comment", class: "App\Entity\Comment", options: ["id" => "idComment"])]
+    #[IsGranted('ROLE_USER', message:'ha ta pas les droits mon potes')]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
     public function get_comment(Comment $comment, SerializerInterface $serializer): JsonResponse
     {
         // format to json
@@ -52,7 +57,8 @@ class CommentController extends AbstractController
 
     /**************************/
     /*[CREATE COMMENT]*/
-    #[Route ("/comment/", name: "comment.post", methods: ["POST"])]
+    #[Route ("api/comment/", name: "comment.post", methods: ["POST"])]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
     public function set_comment(
         Request                $request,
         EntityManagerInterface $entityManager,
@@ -71,8 +77,9 @@ class CommentController extends AbstractController
 
     /**************************/
     /*[EDITE THIS COMMENT]*/
-    #[Route ("/comment/{idComment}", name: "comment.put", methods: ["PUT"])]
+    #[Route ("api/comment/{idComment}", name: "comment.put", methods: ["PUT"])]
     #[ParamConverter("comment", class: "App\Entity\Comment", options: ["id" => "idComment"])]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
     public function update_comment(Comment                $comment,
                                    Request                $request,
                                    EntityManagerInterface $entityManager,
@@ -88,10 +95,15 @@ class CommentController extends AbstractController
         return new JsonResponse($jsonGame, Response::HTTP_ACCEPTED, [], true);
     }
 
-    /**************************/
-    /*[DELETE THIS COMMENT]*/
-    #[Route ("/comment/{idComment}", name: "comment.del", methods: ["DELETE"])]
+    /** DELETE this comment on DB
+     *
+     * @param Comment $comment
+     * @param EntityManagerInterface $entityManager
+     * @return JsonResponse
+     */
+    #[Route ("api/comment/{idComment}", name: "comment.del", methods: ["DELETE"])]
     #[ParamConverter("comment", class: "App\Entity\Comment", options: ["id" => "idComment"])]
+    #[IsGranted('ROLE_SUADMIN', message:'ha ta pas les droits mon potes')]
     public function delete_comment(Comment $comment, EntityManagerInterface $entityManager): JsonResponse
     {
         $entityManager->remove($comment);
@@ -101,8 +113,9 @@ class CommentController extends AbstractController
 
     /**************************/
     /*[REMOVE THIS COMMENT]*/
-    #[Route ("/comment/{idComment}", name: "comment.remove", methods: ["POST"])]
+    #[Route ("api/comment/{idComment}", name: "comment.remove", methods: ["POST"])]
     #[ParamConverter("comment", class: "App\Entity\Comment", options: ["id" => "idComment"])]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
     public function remove_comment(Comment                $comment,
                                    EntityManagerInterface $entityManager): JsonResponse
     {

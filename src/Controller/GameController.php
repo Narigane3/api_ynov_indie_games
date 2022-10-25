@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Game;
 use App\Repository\GameRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -33,7 +35,9 @@ class GameController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route ('/game/all', name: 'app_game')]
+    #[Route ('api/game/all', name: 'app_game')]
+    #[IsGranted('ROLE_USER', message:'ha ta pas les droits mon potes')]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
     public function get_all_games(GameRepository      $repository,
                                   SerializerInterface $serializer,
                                   Request             $request): JsonResponse
@@ -53,8 +57,10 @@ class GameController extends AbstractController
     }
     /**************************/
     /*[GET THIS GAME]*/
-    #[Route ("/game/{idGame}", name: "game.get", methods: ["GET"])]
+    #[Route ("api/game/{idGame}", name: "game.get", methods: ["GET"])]
     #[ParamConverter("game", class: "App\Entity\Game", options: ["id" => "idGame"])]
+    #[IsGranted('ROLE_USER', message:'RHA RHA ta pas les droits mon potes')]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
     public function get_games(Game $game, SerializerInterface $serializer): JsonResponse
     {
         //dd($idGame);
@@ -67,7 +73,9 @@ class GameController extends AbstractController
 
     /**************************/
     /*[CREAT GAME]*/
-    #[Route ("/game/", name: "game.post", methods: ["POST"])]
+    #[Route ("api/game/", name: "game.post", methods: ["POST"])]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
     public function set_games(Request                $request,
                               EntityManagerInterface $entityManager,
                               SerializerInterface    $serializer,
@@ -91,18 +99,19 @@ class GameController extends AbstractController
 
     /**************************/
     /*[EDITE THIS GAME]*/
-    #[Route ("/game/{id}", name: "game.put", methods: ["PUT"])]
+    #[Route ("api/game/{idGame}", name: "game.put", methods: ["PUT"])]
+    #[ParamConverter("game", class: "App\Entity\Game", options: ["id" => "idGame"])]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
     public function update_games(Game                   $game,
                                  Request                $request,
                                  EntityManagerInterface $entityManager,
                                  SerializerInterface    $serializer
     ): JsonResponse
     {
-        $game = $serializer->deserialize($request->getContent(), Game::class, 'json');
-        $game->setStatus('on');
-
-        $entityManager->persist($game);
-
+        $gameEdite = $serializer->deserialize($request->getContent(), Game::class, 'json',[AbstractNormalizer::OBJECT_TO_POPULATE=>$game]);
+        $gameEdite->setId($game->getId());
+        $gameEdite->setStatus('on');
+        $entityManager->persist($gameEdite);
         $entityManager->flush();
         $jsonGame = $serializer->serialize($game, "json");
 
@@ -111,8 +120,9 @@ class GameController extends AbstractController
 
     /**************************/
     /*[DELETE THIS GAME]*/
-    #[Route ("/game/{idGame}", name: "game.del", methods: ["DELETE"])]
+    #[Route ("api/game/{idGame}", name: "game.del", methods: ["DELETE"])]
     #[ParamConverter("game", class: "App\Entity\Game", options: ["id" => "idGame"])]
+    #[IsGranted('ROLE_SUADMIN', message:'ha ta pas les droits mon potes')]
     public function delete_games(Game $game, EntityManagerInterface $entityManager): JsonResponse
     {
         $entityManager->remove($game);
@@ -122,8 +132,9 @@ class GameController extends AbstractController
 
     /**************************/
     /*[REMOVE THIS GAME]*/
-    #[Route ("/game/{idGame}", name: "game.remove", methods: ["POST"])]
+    #[Route ("api/game/{idGame}", name: "game.remove", methods: ["POST"])]
     #[ParamConverter("game", class: "App\Entity\Game", options: ["id" => "idGame"])]
+    #[IsGranted('ROLE_ADMIN', message:'ha ta pas les droits mon potes')]
     public function remove_games(Game                   $game,
                                  EntityManagerInterface $entityManager): JsonResponse
     {
