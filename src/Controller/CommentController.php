@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Comment;
-use App\Entity\Game;
 use App\Repository\CommentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -13,18 +12,19 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class CommentController extends AbstractController
 {
-    #[Route('/comment', name: 'app_comment')]
+   /* #[Route('/comment', name: 'app_comment')]
     public function index(): JsonResponse
     {
         return $this->json([
             'message' => 'Welcome to your new controller!',
             'path' => 'src/Controller/CommentController.php',
         ]);
-    }
+    }*/
 
     /**************************/
     /*[GET ALL COMMENT]*/
@@ -34,7 +34,7 @@ class CommentController extends AbstractController
     {
         $comment = $repository->findAll();
         // format to json
-        $jsonComment = $serializer->serialize($comment, 'json', ['group' => 'all_comment']);
+        $jsonComment = $serializer->serialize($comment, 'json', ['groups' => 'all_comment']);
         return new JsonResponse($jsonComment, Response::HTTP_OK, [], true);
     }
 
@@ -52,19 +52,16 @@ class CommentController extends AbstractController
 
     /**************************/
     /*[CREATE COMMENT]*/
-    #[Route ("/comment/game/{game_id}", name: "comment.post", methods: ["POST"])]
-    #[ParamConverter("game", class: "App\Entity\Game", options: ["id" => "game_id"])]
-    public function set_comment(Game                   $game,
-                                Request                $request,
-                                EntityManagerInterface $entityManager,
-                                SerializerInterface    $serializer,
-                                UrlGeneratorInterface  $urlGenerator
+    #[Route ("/comment/", name: "comment.post", methods: ["POST"])]
+    public function set_comment(
+        Request                $request,
+        EntityManagerInterface $entityManager,
+        SerializerInterface    $serializer,
+        UrlGeneratorInterface  $urlGenerator
     ): JsonResponse
     {
-        $comment = $serializer->deserialize($request->getContent(), Comment::class, 'json', []);
+        $comment = $serializer->deserialize($request->getContent(), Comment::class, 'json', [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true]);
         $comment->setStatus('on');
-        dump($game->getId());
-        $comment->setFCommentGameId($game->getId());
         $entityManager->persist($comment);
         $entityManager->flush();
         $location = $urlGenerator->generate('comment.get', ['idGame' => $comment->getId()]);
@@ -76,11 +73,10 @@ class CommentController extends AbstractController
     /*[EDITE THIS COMMENT]*/
     #[Route ("/comment/{idComment}", name: "comment.put", methods: ["PUT"])]
     #[ParamConverter("comment", class: "App\Entity\Comment", options: ["id" => "idComment"])]
-
     public function update_comment(Comment                $comment,
-                                 Request                $request,
-                                 EntityManagerInterface $entityManager,
-                                 SerializerInterface    $serializer
+                                   Request                $request,
+                                   EntityManagerInterface $entityManager,
+                                   SerializerInterface    $serializer
     ): JsonResponse
     {
         $comment = $serializer->deserialize($request->getContent(), Comment::class, 'json');
@@ -108,7 +104,7 @@ class CommentController extends AbstractController
     #[Route ("/comment/{idComment}", name: "comment.remove", methods: ["POST"])]
     #[ParamConverter("comment", class: "App\Entity\Comment", options: ["id" => "idComment"])]
     public function remove_comment(Comment                $comment,
-                                 EntityManagerInterface $entityManager): JsonResponse
+                                   EntityManagerInterface $entityManager): JsonResponse
     {
         $comment->setStatus('off');
         $entityManager->persist($comment);

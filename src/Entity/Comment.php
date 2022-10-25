@@ -26,7 +26,6 @@ class Comment
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['this_comment','all_comment'])]
-    #[MaxDepth(2)]
     private ?game $f_commentGameId = null;
 
     #[ORM\Column(length: 10)]

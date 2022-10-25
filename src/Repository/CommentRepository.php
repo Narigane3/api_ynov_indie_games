@@ -72,12 +72,27 @@ class CommentRepository extends ServiceEntityRepository
      * @param string $status ['on' or 'off']
      * @return array
      */
-    public function findAlLGame($page, $limit, $status){
+    public function findAlLGame($page, $limit, $status)
+    {
         $qb = $this->createQueryBuilder('s');
         $qb->setFirstResult(($page - 1) * $limit);
         $qb->setMaxResults($limit);
         $qb->where("s.status='$status'");
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Return all game published ordered of popularity by comment number
+     * The popularity is defined by number of comment
+     *
+     * @param bool $order [ 0 = DESC , 1 = ASC] most popular or least popular
+     * @param int $page  page start
+     * @param int $limit Limit of game display on page
+     * @return array
+     */
+    public function findGameByComment(bool $order, int $page,int $limit): array
+    {
+        return array();
     }
 
 }
