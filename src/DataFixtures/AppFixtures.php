@@ -25,7 +25,7 @@ class AppFixtures extends Fixture
     {
         // $product = new Product();
         // $manager->persist($product);
-        $gameListe=[];
+        $gameList=[];
         for ($i=0; $i < 50;$i++){
             $game = new Game();
             $game
@@ -35,7 +35,7 @@ class AppFixtures extends Fixture
                 ->setGamePlatform('PC')
                 ->setGameDescription($this->faker->realText(200))
                 ->setStatus('on');
-            $gameListe[] = $game;
+            $gameList[] = $game;
             $manager->persist($game); // stock in php cache
         }
 
@@ -46,7 +46,7 @@ class AppFixtures extends Fixture
                 ->setCommentText($this->faker->realText(500))
                 ->setCommentUser($this->faker->userName())
                 ->setStatus('on')
-                ->setFCommentGameId($gameListe[array_rand($gameListe)]);
+                ->setFCommentGameId($gameList[array_rand($gameList)]);
             $manager->persist($comment);
         }
 

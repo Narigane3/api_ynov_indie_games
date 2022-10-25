@@ -83,12 +83,28 @@ class GameRepository extends ServiceEntityRepository
      * @param string $status ['on' or 'off']
      * @return array
      */
-    public function findAlLGame($page, $limit, $status){
+    public function findAlLGame($page, $limit, $status)
+    {
         $qb = $this->createQueryBuilder('s');
         $qb->setFirstResult(($page - 1) * $limit);
         $qb->setMaxResults($limit);
         $qb->where("s.status='$status'");
         return $qb->getQuery()->getResult();
     }
+
+
+    /**
+     * Return random game by genre
+     *
+     * @param string|null $genre [video game genre]
+     * @return array|bool [return gamme object or false]
+     */
+    public function randomGame(string|null $genre): array|bool
+    {
+        return array();
+    }
+
+
+
 
 }
