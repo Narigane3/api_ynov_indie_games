@@ -16,6 +16,7 @@ class Game
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['this_game','all_games','this_comment','all_comment'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
