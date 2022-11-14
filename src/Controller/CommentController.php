@@ -76,7 +76,7 @@ class CommentController extends AbstractController
         });
 
         return new JsonResponse($comment, Response::HTTP_OK, ['accept' => 'json'], true);
-    }
+    }S
 
     /**************************/
     /*[CREATE COMMENT]*/
@@ -92,7 +92,7 @@ class CommentController extends AbstractController
         $cache->invalidateTags(['commentCache']);
         $comment = $serializer->deserialize($request->getContent(), Comment::class, 'json', [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true]);
        /* $updateComment = $serializer->deserialize($request->getContent(), Comment::class, 'json');
-        $comment->setCommentText($updateComment->getCommentText()?$updateComment->getCommentText():$comment->getCommentText());\*/
+        $comment->setCommentText($updateComment->getCommentText()?$updateComment->getCommentText():$comment->getCom mentText());\*/
         $comment->setStatus('on');
         $entityManager->persist($comment);
         $entityManager->flush();
