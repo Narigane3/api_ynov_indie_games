@@ -13,7 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
-use Symfony\Component\Serializer\SerializerInterface;
+/*use Symfony\Component\Serializer\SerializerInterface;*/
+use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
+use JMS\Serializer\SerializationContext;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
@@ -41,7 +44,9 @@ class CommentController extends AbstractController
             echo 'Hello comment';
             $item->tag('commentCache');
             $comment = $repository->findAll();
-            return $serializer->serialize($comment, 'json', ['groups' => 'all_comment']);
+            $context = SerializationContext::create()->setGroups(['all_comment']);
+            return $serializer->serialize($comment, 'json', $context);
+            /*return $serializer->serialize($comment, 'json', ['groups' => 'all_comment']);*/
         });
         // $comment = $repository->findAll();
         // format to json
@@ -54,18 +59,20 @@ class CommentController extends AbstractController
     /*[GET THIS COMMENT]*/
     #[Route ("/api/comment/{idComment}", name: "comment.get", methods: ["GET"])]
     #[ParamConverter("comment", class: "App\Entity\Comment", options: ["id" => "idComment"])]
-    public function get_comment(Comment                $comment, SerializerInterface $serializer,
+    public function get_comment(Comment $comment, SerializerInterface $serializer,
                                 TagAwareCacheInterface $cache): JsonResponse
     {
         // format to json
-        /*$jsonComment = $serializer->serialize($comment, 'json', ['groups' => 'this_comment']);
+        /*$jsonComment = $serializer->serialize($comment, 'json', ['groups' => 'this_comment']);*/
 
-        $commentId = $comment->getId();*/
-        $idCache = "commentThisComment$comment";
+        $commentId = $comment->getId();
+        $idCache = "commentThisComment$commentId";
 
         $comment = $cache->get($idCache, function (ItemInterface $item) use ($comment, $serializer) {
             $item->tag('commentCache');
-            return $serializer->serialize($comment, 'json', ['groups' => 'this_comment']);
+            /*return $serializer->serialize($comment, 'json', ['groups' => 'this_comment']);*/
+            $context = SerializationContext::create()->setGroups(['this_comment']);
+            return $serializer->serialize($comment, 'json', $context);
         });
 
         return new JsonResponse($comment, Response::HTTP_OK, ['accept' => 'json'], true);
@@ -84,6 +91,8 @@ class CommentController extends AbstractController
     {
         $cache->invalidateTags(['commentCache']);
         $comment = $serializer->deserialize($request->getContent(), Comment::class, 'json', [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true]);
+       /* $updateComment = $serializer->deserialize($request->getContent(), Comment::class, 'json');
+        $comment->setCommentText($updateComment->getCommentText()?$updateComment->getCommentText():$comment->getCommentText());\*/
         $comment->setStatus('on');
         $entityManager->persist($comment);
         $entityManager->flush();
