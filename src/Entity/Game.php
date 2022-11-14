@@ -8,15 +8,14 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+
 #[ORM\Entity(repositoryClass: GameRepository::class)]
 class Game
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['this_game','all_games','this_comment','all_comment'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -50,16 +49,16 @@ class Game
     private ?string $status = null;
 
     #[ORM\OneToMany(mappedBy: 'f_commentGameId', targetEntity: Comment::class, orphanRemoval: true)]
-    #[Groups(['this_game','all_games'])]
+    #[Groups(['all_games'])]
     private Collection $comments;
 
     #[ORM\Column(length: 100, nullable: true, options: ['default' => 'RPG'])]
     #[Groups(['this_game','all_games','this_comment','all_comment'])]
     #[Assert\NotBlank(message: "le jeux doit avoir un genre non vide")]
     #[Assert\Choice(
-        choices: ['RPG', 'MMO', 'HACK-AND-SLASH', 'FPS', 'BATTLE-ROYAL', 'ADVENTURE', 'RACE', 'MUSIC', 'SIMULATION', 'SPORT'], message: "Prend un genre dans une list défini"
+        choices: ['RPG', 'MMO', 'HACK-AND-SLASH', 'FPS', 'BATTLE-ROYAL', 'ADVENTURE', 'RACE', 'MUSIC', 'SIMULATION', 'SPORT'], message: 'Prend un genre dans une list défini'
     )]
-    private ?string $genre = null;
+    private ?string $genre = 'RPG';
 
     public function __construct()
     {
