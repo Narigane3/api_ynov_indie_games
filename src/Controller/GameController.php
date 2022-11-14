@@ -172,6 +172,7 @@ class GameController extends AbstractController
         );
 
         $game->setGameName($updateGame->getGameName()?$updateGame->getGameName():$game->getGameName());
+        $game->setGameCompany($updateGame->getGameCompany()?$updateGame->getGameCompany():$game->getGameCompany());
         $game->setGamePlatform($updateGame->getGamePlatform()?$updateGame->getGamePlatform():$game->getGamePlatform());
         $game->setGameDescription($updateGame->getGameDescription()?$updateGame->getGameDescription():$game->getGameDescription());
         $game->setGenre($updateGame->getGenre()?$updateGame->getGenre():$game->getGenre());
