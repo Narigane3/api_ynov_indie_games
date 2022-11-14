@@ -79,10 +79,10 @@ class GameController extends AbstractController
          * return a cache object
          */
         $game = $cache->get($idCache, function (ItemInterface $item) use ($repository, $page, $limit, $status, $serializer) {
-            echo 'hello';
+            echo 'hello cache';
             $item->tag("gameCache");
             $game = $repository->findAll($page, $limit, $status);
-            $context = SerializationContext::create()->setGroups(['groups' => 'all_games']);
+            $context = SerializationContext::create()->setGroups(['all_games']);
             return $serializer->serialize($game, 'json',$context);
         });
 
@@ -104,7 +104,8 @@ class GameController extends AbstractController
         $game = $cache->get($idCache, function (ItemInterface $item) use ($serializer,$game,$gameId) {
             echo "hello cache";
             $item->tag("gameCache");
-            return $serializer->serialize($game, 'json', ['groups' => 'this_game']);
+            $context = SerializationContext::create()->setGroups('this_game');
+            return $serializer->serialize($game, 'json', $context);
         });
 
         // format to json
@@ -157,12 +158,25 @@ class GameController extends AbstractController
     ): JsonResponse
     {
         $cache->invalidateTags(['gameCache']);
-        $game = $serializer->deserialize(
+        /*$game = $serializer->deserialize(
             $request->getContent(),
             Game::class,
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $game]
+        );*/
+
+        $updateGame = $serializer->deserialize(
+            $request->getContent(),
+            Game::class,
+            'json'
         );
+
+        $game->setGameName($updateGame->getGameName()?$updateGame->getGameName():$game->getGameName());
+        $game->setGamePlatform($updateGame->getGamePlatform()?$updateGame->getGamePlatform():$game->getGamePlatform());
+        $game->setGameDescription($updateGame->getGameDescription()?$updateGame->getGameDescription():$game->getGameDescription());
+        $game->setGenre($updateGame->getGenre()?$updateGame->getGenre():$game->getGenre());
+        $game->setGameLaunchDate($updateGame->getGameLaunchDate()?$updateGame->getGameLaunchDate():$game->getGameLaunchDate());
+
         $game->setStatus('on');
 
         $entityManager->persist($game);
