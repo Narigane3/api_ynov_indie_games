@@ -27,13 +27,19 @@ class GameController extends AbstractController
     /**************************/
     #[Route('/api/game/random', name: 'game.random', methods: ['GET'])]
     public function get_random_game_genre(
-        GameRepository $gameRepository
+        GameRepository $gameRepository,
+        SerializerInterface $serializer,
+        Request $request
     ): JsonResponse
     {
-        $games = $gameRepository->randomGame();
-        $randGameNum = rand(0, count($gameRepository->randomGame()) - 1);
-        // dd($games[$randGameNum]);
-        return new JsonResponse(json_encode($games[$randGameNum]), 200, [], false);
+        $games = $gameRepository->randomGame($request->query->get('genre', 'RPG'));
+        $randGameNum = rand(0, count($games) - 1);
+        return new JsonResponse(
+            $serializer->serialize($games[$randGameNum], 'json'),
+            Response::HTTP_OK,
+            [],
+            true
+        );
     }
 
 

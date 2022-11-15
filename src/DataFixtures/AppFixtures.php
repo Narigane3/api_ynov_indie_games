@@ -53,6 +53,7 @@ class AppFixtures extends Fixture
 
         // $product = new Product();
         // $manager->persist($product);
+        $gameGenres = ['RPG', 'MMO', 'FPS', 'ACTION', 'ADVENTURE', 'SPORT', 'RACE'];
         $gameList=[];
         for ($i=0; $i < 50;$i++){
             $game = new Game();
@@ -62,6 +63,7 @@ class AppFixtures extends Fixture
                 ->setGameLaunchDate($this->faker->optional($weight = .25)->dateTime($max = '01/01/2003'))
                 ->setGamePlatform('PC')
                 ->setGameDescription($this->faker->realText(200))
+                ->setGenre($gameGenres[array_rand($gameGenres)])
                 ->setStatus('on');
             $gameList[] = $game;
             $manager->persist($game); // stock in php cache
@@ -77,9 +79,6 @@ class AppFixtures extends Fixture
                 ->setFCommentGameId($gameList[array_rand($gameList)]);
             $manager->persist($comment);
         }
-
-
-
 
         $manager->flush();
     }
