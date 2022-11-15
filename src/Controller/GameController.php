@@ -25,13 +25,15 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 class GameController extends AbstractController
 {
     /**************************/
-    #[Route('/game/random', name: 'game.random', methods: ['GET'])]
+    #[Route('/api/game/random', name: 'game.random', methods: ['GET'])]
     public function get_random_game_genre(
         GameRepository $gameRepository
     ): JsonResponse
     {
-        dd($gameRepository->randomGame('RPG'));
-        return new JsonResponse(null, 200, [], false);
+        $games = $gameRepository->randomGame();
+        $randGameNum = rand(0, count($gameRepository->randomGame()) - 1);
+        // dd($games[$randGameNum]);
+        return new JsonResponse(json_encode($games[$randGameNum]), 200, [], false);
     }
 
 
@@ -83,7 +85,7 @@ class GameController extends AbstractController
             $item->tag("gameCache");
             $game = $repository->findAll($page, $limit, $status);
             $context = SerializationContext::create()->setGroups(['all_games']);
-            return $serializer->serialize($game, 'json',$context);
+            return $serializer->serialize($game, 'json', $context);
         });
 
         return new JsonResponse($game, Response::HTTP_OK, [], true);
