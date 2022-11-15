@@ -92,7 +92,11 @@ class CommentRepository extends ServiceEntityRepository
      */
     public function findGameByComment(bool $order, int $page,int $limit): array
     {
-        return array();
+        $qb = $this->createQueryBuilder('s');
+        $qb->setFirstResult(($page - 1) * $limit);
+        $qb->setMaxResults($limit);
+        $qb->orderBy("s.f_commentGameId", $order === true ? 'ASC' : 'DESC');
+        return $qb->getQuery()->getResult();
     }
 
 }

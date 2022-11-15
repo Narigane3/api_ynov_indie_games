@@ -39,15 +39,26 @@ class CommentController extends AbstractController
                                     TagAwareCacheInterface $cache,
     ): JsonResponse
     {
-        $idCache = "commentCacheAll";
+        // $idCache = "commentCacheAll";
+        // $comment = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer) {
+        //     echo 'Hello comment';
+        //     $item->tag('commentCache');
+        //     $comment = $repository->findAll();
+        //     $context = SerializationContext::create()->setGroups(['all_comment']);
+        //     return $serializer->serialize($comment, 'json', $context);
+        //     /*return $serializer->serialize($comment, 'json', ['groups' => 'all_comment']);*/
+        // });
+
+        $idCache = "commentCacheFindBy";
         $comment = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer) {
             echo 'Hello comment';
             $item->tag('commentCache');
-            $comment = $repository->findAll();
+            $comment = $repository->findGameByComment(true, 1, 3);
             $context = SerializationContext::create()->setGroups(['all_comment']);
             return $serializer->serialize($comment, 'json', $context);
             /*return $serializer->serialize($comment, 'json', ['groups' => 'all_comment']);*/
         });
+
         // $comment = $repository->findAll();
         // format to json
         /*$jsonComment = $serializer->serialize($comment, 'json', ['groups' => 'all_comment']);
@@ -76,7 +87,7 @@ class CommentController extends AbstractController
         });
 
         return new JsonResponse($comment, Response::HTTP_OK, ['accept' => 'json'], true);
-    }S
+    }
 
     /**************************/
     /*[CREATE COMMENT]*/
