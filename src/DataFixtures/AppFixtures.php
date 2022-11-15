@@ -18,41 +18,36 @@ class AppFixtures extends Fixture
      */
     private Generator $faker;
 
-    /**
-     * object $userPasswordHasherInterface
-     * @var $userPasswordHasher
-     */
-    private $userPasswordHasher;
+    private UserPasswordHasherInterface $userPasswordHasher;
 
-    public function __construct(UserPasswordHasherInterface $userPasswordHasher)
+    public function __construct(
+        UserPasswordHasherInterface $userPasswordHasher
+    )
     {
         $this->faker = Factory::create("fr_FR");
         $this->userPasswordHasher = $userPasswordHasher;
     }
 
-    /**
-     * @param ObjectManager $manager
-     * @return void
-     */
-
     public function load(ObjectManager $manager): void
     {
         $userNumber = 10;
-        //user
+
+        // Authentication Admin
         $adminUser = new User();
-        $password = "password";
-        $adminUser ->setUsername('admin')
-            ->setRoles(["ROLE_ADMIN"])
+        $password = 'password';
+        $adminUser->setUsername('admin')
+            ->setRoles(['ROLE_ADMIN'])
             ->setPassword($this->userPasswordHasher->hashPassword($adminUser, $password));
         $manager->persist($adminUser);
 
-        // authenticated Users
-        for ($i=1; $i < $userNumber;$i++){
+
+        // Authentication Users
+        for ($i=0; $i < $userNumber; $i++) {
             $userUser = new User();
-            $password = $this->faker->password(2,6);
-            $userUser->setUsername($this->faker->userName() .'@'. $password)
-                ->setRoles(["ROLE_USER"])
-                ->setPassword($this->userPasswordHasher->hashPassword($userUser, $password));
+            $password = $this->faker->password(2, 6);
+            $userUser->setUsername($this->faker->userName() . '@' . $password)
+            ->setRoles(['ROLE_USER'])
+            ->setPassword($this->userPasswordHasher->hashPassword($userUser, $password));
             $manager->persist($userUser);
         }
 

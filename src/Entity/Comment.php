@@ -4,8 +4,8 @@ namespace App\Entity;
 
 use App\Repository\CommentRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
+/*use Symfony\Component\Serializer\Annotation\Groups;*/
+use JMS\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
@@ -13,6 +13,7 @@ class Comment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['this_comment','all_comment','this_game','all_games'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 500)]
@@ -25,8 +26,8 @@ class Comment
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['this_comment','all_comment'])]
-    private ?game $f_commentGameId = null;
+    // #[Groups(['this_comment','all_comment'])]
+    private ?Game $f_commentGameId = null;
 
     #[ORM\Column(length: 10)]
     private ?string $status = null;
