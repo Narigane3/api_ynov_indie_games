@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CommentRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 /*use Symfony\Component\Serializer\Annotation\Groups;*/
 use JMS\Serializer\Annotation\Groups;
 
@@ -18,18 +19,28 @@ class Comment
 
     #[ORM\Column(length: 500)]
     #[Groups(['this_comment','all_comment','this_game','all_games'])]
+    #[Assert\NotBlank(message: 'le commentaire de l\'utilisateur ne peut pas être vide')]
+    #[Assert\NotNull]
     private ?string $commentText = null;
 
     #[ORM\Column(length: 100)]
     #[Groups(['this_comment','all_comment','this_game','all_games'])]
+    #[Assert\NotBlank(message: 'l\'utilisateur qui a posté le message ne peut pas être vide')]
+    #[Assert\NotNull]
     private ?string $commentUser = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull]
     // #[Groups(['this_comment','all_comment'])]
     private ?Game $f_commentGameId = null;
 
-    #[ORM\Column(length: 10)]
+    #[ORM\Column(length: 10, options: ['default' => 'on'])]
+    #[Assert\NotNull]
+    #[Assert\Choice(
+        choices: ['on', 'off'],
+        message: 'Spécifier le status du commentaire'
+    )]
     private ?string $status = null;
 
     public function getId(): ?int
