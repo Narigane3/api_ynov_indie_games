@@ -42,6 +42,8 @@ class Game
 
     #[ORM\Column(length: 100)]
     #[Groups(['this_game', 'all_games', 'this_comment', 'all_comment'])]
+    #[Assert\NotBlank(message: "la company du jeu doit être déclaré")]
+    #[Assert\NotNull]
     private ?string $gameCompany = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -50,17 +52,20 @@ class Game
 
     #[ORM\Column(length: 512, nullable: true)]
     #[Groups(['this_game', 'all_games', 'this_comment', 'all_comment'])]
+    #[Assert\NotBlank(message: "la description ne doit pas être vide")]
     private ?string $gameDescription = null;
 
     #[ORM\Column(length: 100)]
     #[Groups(['this_game', 'all_games', 'this_comment', 'all_comment'])]
+    #[Assert\NotNull]
     private ?string $gamePlatform = null;
 
-    #[ORM\Column(length: 10)]
+    #[ORM\Column(length: 10, options: ['default' => 'on'])]
     #[Assert\NotBlank(message: "le status doit être déclaré")]
     #[Assert\NotNull]
     #[Assert\Choice(
-        choices: ['on', 'off'], message: "Active ou désactive le msg"
+        choices: ['on', 'off'],
+        message: 'Active ou désactive le msg'
     )]
     private ?string $status = null;
 
@@ -68,13 +73,14 @@ class Game
     #[Groups(['all_games'])]
     private Collection $comments;
 
-    #[ORM\Column(length: 100, nullable: true, options: ['default' => 'RPG'])]
+    #[ORM\Column(length: 100, options: ['default' => 'RPG'])]
     #[Groups(['this_game', 'all_games', 'this_comment', 'all_comment'])]
     #[Assert\NotBlank(message: "le jeux doit avoir un genre non vide")]
     #[Assert\Choice(
-        choices: ['RPG', 'MMO', 'HACK-AND-SLASH', 'FPS', 'BATTLE-ROYAL', 'ADVENTURE', 'RACE', 'MUSIC', 'SIMULATION', 'SPORT'], message: 'Prend un genre dans une list défini'
+        choices: ['RPG', 'MMO', 'HACK-AND-SLASH', 'FPS', 'BATTLE-ROYAL', 'ADVENTURE', 'RACE', 'MUSIC', 'SIMULATION', 'SPORT'],
+        message: 'Prend un genre dans une liste défini'
     )]
-    private ?string $genre = 'RPG';
+    private ?string $genre = null;
 
     public function __construct()
     {
