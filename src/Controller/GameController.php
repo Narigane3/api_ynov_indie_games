@@ -199,7 +199,7 @@ class GameController extends AbstractController
 
     /**************************/
     /*[DELETE THIS GAME]*/
-    #[Route ('api/game/{idGame}', name: 'game.del', methods: ['DELETE'])]
+    #[Route ('/api/game/{idGame}', name: 'game.del', methods: ['DELETE'])]
     #[ParamConverter('game', class: 'App\Entity\Game', options: ['id' => 'idGame'])]
     #[IsGranted('ROLE_ADMIN', message: 'Oups : Tu peux pas faire ça !')]
     public function delete_games(
@@ -217,7 +217,7 @@ class GameController extends AbstractController
 
 
     /*[REMOVE THIS GAME]*/
-    #[Route ('api/game/remove/{idGame}', name: 'game.remove', methods: ['POST'])]
+    #[Route ('/api/game/{idGame}', name: 'game.remove', methods: ['POST'])]
     #[ParamConverter('game', class: 'App\Entity\Game', options: ['id' => 'idGame'])]
     #[IsGranted('ROLE_ADMIN', message: 'Oups : Tu peux pas faire ça !')]
     public function remove_games(
