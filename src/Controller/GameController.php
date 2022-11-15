@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Game;
 use App\Repository\GameRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,14 +15,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-/*use Symfony\Component\Serializer\SerializerInterface;*/
-use JMS\Serializer\Serializer;
-use JMS\Serializer\SerializerInterface;
-use JMS\Serializer\SerializationContext;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
+
+/*use Symfony\Component\Serializer\SerializerInterface;*/
 
 class GameController extends AbstractController
 {
@@ -30,7 +29,7 @@ class GameController extends AbstractController
         GameRepository $gameRepository
     ): JsonResponse
     {
-        dd($gameRepository->randomGame('RPG'));
+        // dd($gameRepository->randomGame('RPG'));
         return new JsonResponse(null, 200, [], false);
     }
 
@@ -83,7 +82,7 @@ class GameController extends AbstractController
             $item->tag("gameCache");
             $game = $repository->findAll($page, $limit, $status);
             $context = SerializationContext::create()->setGroups(['all_games']);
-            return $serializer->serialize($game, 'json',$context);
+            return $serializer->serialize($game, 'json', $context);
         });
 
         return new JsonResponse($game, Response::HTTP_OK, [], true);
@@ -101,7 +100,7 @@ class GameController extends AbstractController
     {
         $gameId = $game->getId();
         $idCache = "getThisGame$gameId";
-        $game = $cache->get($idCache, function (ItemInterface $item) use ($serializer,$game,$gameId) {
+        $game = $cache->get($idCache, function (ItemInterface $item) use ($serializer, $game, $gameId) {
             echo "hello cache";
             $item->tag("gameCache");
             $context = SerializationContext::create()->setGroups('this_game');
@@ -171,12 +170,12 @@ class GameController extends AbstractController
             'json'
         );
 
-        $game->setGameName($updateGame->getGameName()?$updateGame->getGameName():$game->getGameName());
-        $game->setGameCompany($updateGame->getGameCompany()?$updateGame->getGameCompany():$game->getGameCompany());
-        $game->setGamePlatform($updateGame->getGamePlatform()?$updateGame->getGamePlatform():$game->getGamePlatform());
-        $game->setGameDescription($updateGame->getGameDescription()?$updateGame->getGameDescription():$game->getGameDescription());
-        $game->setGenre($updateGame->getGenre()?$updateGame->getGenre():$game->getGenre());
-        $game->setGameLaunchDate($updateGame->getGameLaunchDate()?$updateGame->getGameLaunchDate():$game->getGameLaunchDate());
+        $game->setGameName($updateGame->getGameName() ? $updateGame->getGameName() : $game->getGameName());
+        $game->setGameCompany($updateGame->getGameCompany() ? $updateGame->getGameCompany() : $game->getGameCompany());
+        $game->setGamePlatform($updateGame->getGamePlatform() ? $updateGame->getGamePlatform() : $game->getGamePlatform());
+        $game->setGameDescription($updateGame->getGameDescription() ? $updateGame->getGameDescription() : $game->getGameDescription());
+        $game->setGenre($updateGame->getGenre() ? $updateGame->getGenre() : $game->getGenre());
+        $game->setGameLaunchDate($updateGame->getGameLaunchDate() ? $updateGame->getGameLaunchDate() : $game->getGameLaunchDate());
 
         $game->setStatus('on');
 

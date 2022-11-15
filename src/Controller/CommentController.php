@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Comment;
 use App\Repository\CommentRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,26 +15,22 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
-/*use Symfony\Component\Serializer\SerializerInterface;*/
-use JMS\Serializer\Serializer;
-use JMS\Serializer\SerializerInterface;
-use JMS\Serializer\SerializationContext;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
+/*use Symfony\Component\Serializer\SerializerInterface;*/
+
 class CommentController extends AbstractController
 {
-    /* #[Route('/comment', name: 'app_comment')]
-     public function index(): JsonResponse
-     {
-         return $this->json([
-             'message' => 'Welcome to your new controller!',
-             'path' => 'src/Controller/CommentController.php',
-         ]);
-     }*/
-
     /**************************/
     /*[GET ALL COMMENT]*/
+    /** Get all comment on Data base
+     * @param CommentRepository $repository
+     * @param SerializerInterface $serializer
+     * @param TagAwareCacheInterface $cache
+     * @return JsonResponse
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     #[Route ('/api/comment/all', name: 'comment_all')]
     public function get_all_comment(CommentRepository      $repository,
                                     SerializerInterface    $serializer,
@@ -70,7 +68,7 @@ class CommentController extends AbstractController
     /*[GET THIS COMMENT]*/
     #[Route ("/api/comment/{idComment}", name: "comment.get", methods: ["GET"])]
     #[ParamConverter("comment", class: "App\Entity\Comment", options: ["id" => "idComment"])]
-    public function get_comment(Comment $comment, SerializerInterface $serializer,
+    public function get_comment(Comment                $comment, SerializerInterface $serializer,
                                 TagAwareCacheInterface $cache): JsonResponse
     {
         // format to json
@@ -101,9 +99,10 @@ class CommentController extends AbstractController
     ): JsonResponse
     {
         $cache->invalidateTags(['commentCache']);
-        $comment = $serializer->deserialize($request->getContent(), Comment::class, 'json', [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true]);
-       /* $updateComment = $serializer->deserialize($request->getContent(), Comment::class, 'json');
-        $comment->setCommentText($updateComment->getCommentText()?$updateComment->getCommentText():$comment->getCom mentText());\*/
+        // $comment = $serializer->deserialize($request->getContent(), Comment::class, 'json', [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true]);
+        $comment = $serializer->deserialize($request->getContent(), Comment::class, 'json');
+        /* $updateComment = $serializer->deserialize($request->getContent(), Comment::class, 'json');
+         $comment->setCommentText($updateComment->getCommentText()?$updateComment->getCommentText():$comment->getCom mentText());\*/
         $comment->setStatus('on');
         $entityManager->persist($comment);
         $entityManager->flush();
