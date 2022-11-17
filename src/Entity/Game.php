@@ -8,8 +8,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Groups;
-
-//use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 use Hateoas\Configuration\Annotation as Hateoas;
@@ -36,7 +34,7 @@ class Game
 
     #[ORM\Column(length: 255)]
     #[Groups(['this_game', 'all_games', 'this_comment', 'all_comment'])]
-    #[Assert\NotBlank(message: "le jeux doit avoir un nom")]
+    #[Assert\NotBlank(message: "le jeux doit avoir un nom", groups: ["create","update"])]
     #[Assert\NotNull]
     private ?string $gameName = null;
 
@@ -57,7 +55,7 @@ class Game
     private ?string $gamePlatform = null;
 
     #[ORM\Column(length: 10)]
-    #[Assert\NotBlank(message: "le status doit être déclaré")]
+    #[Assert\NotBlank(message: "le status doit être déclaré", groups: ["create","update"])]
     #[Assert\NotNull]
     #[Assert\Choice(
         choices: ['on', 'off'], message: "Active ou désactive le msg"
@@ -70,7 +68,7 @@ class Game
 
     #[ORM\Column(length: 100, nullable: true, options: ['default' => 'RPG'])]
     #[Groups(['this_game', 'all_games', 'this_comment', 'all_comment'])]
-    #[Assert\NotBlank(message: "le jeux doit avoir un genre non vide")]
+    #[Assert\NotBlank(message: "le jeux doit avoir un genre non vide", groups: ["create","update"])]
     #[Assert\Choice(
         choices: ['RPG', 'MMO', 'HACK-AND-SLASH', 'FPS', 'BATTLE-ROYAL', 'ADVENTURE', 'RACE', 'MUSIC', 'SIMULATION', 'SPORT'], message: 'Prend un genre dans une list défini'
     )]

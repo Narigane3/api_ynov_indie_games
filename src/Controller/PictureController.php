@@ -5,6 +5,9 @@ namespace App\Controller;
 use App\Entity\Picture;
 use App\Repository\PictureRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,7 +27,19 @@ class PictureController extends AbstractController
         ]);
     }
 
+    /**
+     * Return the picture find by id
+     */
     #[Route('api/picture/{idPicture}', name: 'picture.get', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Return the picture find',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Picture::class))
+        )
+    )]
+    #[Security(name: 'Bearer')]
     public function getPicture(int                 $idPicture,
                                SerializerInterface $serializer,
                                PictureRepository   $repositor,
@@ -47,7 +62,27 @@ class PictureController extends AbstractController
         return new JsonResponse(null, JsonResponse::HTTP_NOT_FOUND);
     }
 
+    /**
+     * Add new picture
+     */
     #[Route('api/picture', name: 'pictures.create', methods: ['POST'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Picture is add',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Picture::class))
+        )
+    )]
+    #[OA\RequestBody(
+        description: 'Content body for add new picture',
+        required: true,
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Picture::class))
+        )
+    )]
+    #[Security(name: 'Bearer')]
     public function createPicture(
         Request                $request,
         EntityManagerInterface $entityManager,

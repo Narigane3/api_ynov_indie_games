@@ -26,7 +26,7 @@ class Comment
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    // #[Groups(['this_comment','all_comment'])]
+    #[Groups(['this_comment','all_comment'])]
     private ?Game $f_commentGameId = null;
 
     #[ORM\Column(length: 10)]
@@ -69,7 +69,6 @@ class Comment
     public function setFCommentGameId(?game $f_commentGameId): self
     {
         $this->f_commentGameId = $f_commentGameId;
-
         return $this;
     }
 
