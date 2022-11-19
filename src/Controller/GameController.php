@@ -21,21 +21,41 @@ use JMS\Serializer\SerializationContext;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Attributes as OA;
 
 class GameController extends AbstractController
 {
-    /**************************/
+    /**
+     * Return a random game depending on its genre
+     *
+     * Required : user role
+     */
     #[Route('/api/game/random', name: 'game.random', methods: ['GET'])]
+    #[OA\Parameter(
+        name: 'genre',
+        description: 'The game genre',
+        in: 'query',
+        schema: new OA\Schema(type: 'string')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns the rewards of an user',
+        content: new OA\JsonContent(
+            ref: new Model(type: Game::class, groups: ['this_game', 'all_comment'])
+        )
+    )]
+    #[Security(name: 'Bearer')]
     public function get_random_game_genre(
         GameRepository $gameRepository,
         SerializerInterface $serializer,
         Request $request
     ): JsonResponse
     {
-        $games = $gameRepository->randomGame($request->query->get('genre', 'RPG'));
-        $randGameNum = rand(0, count($games) - 1);
+        $randGame = $gameRepository->randomGame($request->query->get('genre', 'RPG'));
         return new JsonResponse(
-            $serializer->serialize($games[$randGameNum], 'json'),
+            $serializer->serialize($randGame, 'json'),
             Response::HTTP_OK,
             [],
             true
@@ -43,25 +63,33 @@ class GameController extends AbstractController
     }
 
 
-    #[Route('/game', name: 'app_game')]
-    public function index(): JsonResponse
-    {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/GameController.php',
-        ]);
-    }
-
-
-    /**************************/
-    /*[GET ALL GAME]*/
-    /** Return all games on db
-     * @param GameRepository $repository
-     * @param SerializerInterface $serializer
-     * @param Request $request
-     * @return JsonResponse
+    /**
+     * Return all games in DB
+     *
+     * Required : user role
      */
-    #[Route ('/api/game/all', name: 'app_game')]
+    #[Route ('/api/games', name: 'app_game', methods: ['GET'])]
+    #[OA\Parameter(
+        name: 'page',
+        description: 'The field is offset page of content',
+        in: 'query',
+        schema: new OA\Schema(type: 'int')
+    )]
+    #[OA\Parameter(
+        name: 'limit',
+        description: 'The limit of game by page',
+        in: 'query',
+        schema: new OA\Schema(type: 'int')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Return all games in DB',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Game::class))
+        )
+    )]
+    #[Security(name: 'Bearer')]
     public function get_all_games(
         GameRepository         $repository,
         SerializerInterface    $serializer,
@@ -69,25 +97,13 @@ class GameController extends AbstractController
         TagAwareCacheInterface $cache
     ): JsonResponse
     {
-        $page = $request->get('page', 1);
-        $limit = $request->get('limit', 5);
+        $page = $request->query->get('page', 1);
+        $limit = $request->query->get('limit', 5);
         $limit = $limit > 50 ? 20 : $limit;
         $status = $request->get('status', 'on');
-        /*dd([
-            "page"=> $page,
-            "limit"=> $limit
-        ]);*/
-        /*$game = $repository->findAlLGame($page,$limit,$status);
-        // format to json
-        $jsonGame = $serializer->serialize($game, 'json', ['groups' => 'all_games']);
-        return new JsonResponse($jsonGame, Response::HTTP_OK, [], true);*/
 
         $idCache = 'getAllGame';
-        /**
-         * return a cache object
-         */
         $game = $cache->get($idCache, function (ItemInterface $item) use ($repository, $page, $limit, $status, $serializer) {
-            echo 'hello cache';
             $item->tag("gameCache");
             $game = $repository->findAll($page, $limit, $status);
             $context = SerializationContext::create()->setGroups(['all_games']);
@@ -97,9 +113,22 @@ class GameController extends AbstractController
         return new JsonResponse($game, Response::HTTP_OK, [], true);
     }
 
-    /**************************/
-    /*[GET THIS GAME]*/
+
+    /**
+     * Return game found by given id in to URI
+     *
+     * Required : user role
+     */
     #[Route ('/api/game/{idGame}', name: 'game.get', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Return all games in DB',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Game::class))
+        )
+    )]
+    #[Security(name: 'Bearer')]
     #[ParamConverter('game', class: 'App\Entity\Game', options: ['id' => 'idGame'])]
     public function get_games(
         Game                   $game,
@@ -110,7 +139,6 @@ class GameController extends AbstractController
         $gameId = $game->getId();
         $idCache = "getThisGame$gameId";
         $game = $cache->get($idCache, function (ItemInterface $item) use ($serializer,$game,$gameId) {
-            echo "hello cache";
             $item->tag("gameCache");
             $context = SerializationContext::create()->setGroups('this_game');
             return $serializer->serialize($game, 'json', $context);
@@ -123,9 +151,27 @@ class GameController extends AbstractController
     }
 
 
-    /**************************/
-    /*[CREAT GAME]*/
-    #[Route ('/game', name: 'game.post', methods: ['POST'])]
+    /**
+     * Create new game
+     *
+     * Required : admin role
+     */
+    #[Route ('/api/game', name: 'game.post', methods: ['POST'])]
+    #[OA\RequestBody(
+        description: 'Content for create game',
+        required: true,
+        content: new OA\JsonContent(
+            ref: new Model(type: Game::class, groups: ['this_game'])
+        )
+    )]
+    #[OA\Response(
+        response: 201,
+        description: 'Set new game into db',
+        content: new OA\JsonContent(
+            ref: new Model(type: Game::class, groups: ['this_game'])
+        )
+    )]
+    #[Security(name: 'Bearer')]
     #[IsGranted('ROLE_ADMIN', message: 'Oups : Tu peux pas faire ça !')]
     public function set_games(
         Request                $request,
@@ -147,15 +193,35 @@ class GameController extends AbstractController
         $entityManager->flush();
         $location = $urlGenerator->generate('game.get', ['idGame' => $game->getId()]);
         $jsonGame = $serializer->serialize($location, "json");
+
+        //return new JsonResponse(null, Response::HTTP_CREATED, [], false);
         return new JsonResponse($jsonGame, Response::HTTP_CREATED, [], true);
     }
 
 
-    /**************************/
-    /*[EDITE THIS GAME]*/
+    /**
+     * Update the game find by id given
+     *
+     * Required : admin role
+     */
     #[Route ('/api/game/{idGame}', name: 'game.put', methods: ['PUT'])]
-    #[ParamConverter('game', options: ['id' => 'idGame'])]
+    #[OA\RequestBody(
+        description: 'Content for update game element',
+        required: true,
+        content: new OA\JsonContent(
+            ref: new Model(type: Game::class, groups: ['this_game'])
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Update game find by game ID',
+        content: new OA\JsonContent(
+            ref: new Model(type: Game::class, groups: ['this_game'])
+        )
+    )]
+    #[Security(name: 'Bearer')]
     #[IsGranted('ROLE_ADMIN', message: 'Oups : Tu peux pas faire ça !')]
+    #[ParamConverter('game', options: ['id' => 'idGame'])]
     public function update_games(
         Game                   $game,
         Request                $request,
@@ -166,12 +232,6 @@ class GameController extends AbstractController
     ): JsonResponse
     {
         $cache->invalidateTags(['gameCache']);
-        /*$game = $serializer->deserialize(
-            $request->getContent(),
-            Game::class,
-            'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $game]
-        );*/
 
         $updateGame = $serializer->deserialize(
             $request->getContent(),
@@ -179,12 +239,12 @@ class GameController extends AbstractController
             'json'
         );
 
-        $game->setGameName($updateGame->getGameName()?$updateGame->getGameName():$game->getGameName());
-        $game->setGameCompany($updateGame->getGameCompany()?$updateGame->getGameCompany():$game->getGameCompany());
-        $game->setGamePlatform($updateGame->getGamePlatform()?$updateGame->getGamePlatform():$game->getGamePlatform());
-        $game->setGameDescription($updateGame->getGameDescription()?$updateGame->getGameDescription():$game->getGameDescription());
-        $game->setGenre($updateGame->getGenre()?$updateGame->getGenre():$game->getGenre());
-        $game->setGameLaunchDate($updateGame->getGameLaunchDate()?$updateGame->getGameLaunchDate():$game->getGameLaunchDate());
+        $game->setGameName($updateGame->getGameName() ? $updateGame->getGameName() : $game->getGameName());
+        $game->setGameCompany($updateGame->getGameCompany() ? $updateGame->getGameCompany() : $game->getGameCompany());
+        $game->setGamePlatform($updateGame->getGamePlatform() ? $updateGame->getGamePlatform() : $game->getGamePlatform());
+        $game->setGameDescription($updateGame->getGameDescription() ? $updateGame->getGameDescription() : $game->getGameDescription());
+        $game->setGenre($updateGame->getGenre() ? $updateGame->getGenre() : $game->getGenre());
+        $game->setGameLaunchDate($updateGame->getGameLaunchDate() ? $updateGame->getGameLaunchDate() : $game->getGameLaunchDate());
 
         $game->setStatus('on');
 
@@ -197,9 +257,21 @@ class GameController extends AbstractController
     }
 
 
-    /**************************/
-    /*[DELETE THIS GAME]*/
+    /**
+     * Delete the game find by id passed in uri
+     *
+     * Required : admin role
+     */
     #[Route ('/api/game/{idGame}', name: 'game.del', methods: ['DELETE'])]
+    #[OA\Response(
+        response: 204,
+        description: 'Delete the game into DB',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Game::class))
+        )
+    )]
+    #[Security(name: 'Bearer')]
     #[ParamConverter('game', class: 'App\Entity\Game', options: ['id' => 'idGame'])]
     #[IsGranted('ROLE_ADMIN', message: 'Oups : Tu peux pas faire ça !')]
     public function delete_games(
@@ -216,8 +288,17 @@ class GameController extends AbstractController
     }
 
 
-    /*[REMOVE THIS GAME]*/
-    #[Route ('/api/game/{idGame}', name: 'game.remove', methods: ['POST'])]
+    /**
+     * Remove the game change statut to off find in game find by id passed in uri
+     *
+     * Required : admin role
+     */
+    #[Route('/api/game/{idGame}', name: 'game.remove', methods: ['POST'])]
+    #[OA\Response(
+        response: 204,
+        description: 'Change set status of the game to "off" '
+    )]
+    #[Security(name: 'Bearer')]
     #[ParamConverter('game', class: 'App\Entity\Game', options: ['id' => 'idGame'])]
     #[IsGranted('ROLE_ADMIN', message: 'Oups : Tu peux pas faire ça !')]
     public function remove_games(

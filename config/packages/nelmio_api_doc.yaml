@@ -1,9 +1,9 @@
 nelmio_api_doc:
-    models: { use_jms: false }
+    # models: { use_jms: false }
     documentation:
         info:
             title: IndieGameAPi
-            description: This is an awesome API REST for BileMo!
+            description: This is an awesome API REST for IndieGame!
             version: 1.0.0
         components:
             securitySchemes:
@@ -82,4 +82,4 @@ nelmio_api_doc:
         path_patterns:
             - ^/api(?!(/doc|/doc.json|/token/refresh)$)
         #host_patterns:
-        #    - ^/apissss
+        #    - ^/api

@@ -6,6 +6,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -16,15 +17,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     private ?string $username = null;
 
-    #[ORM\Column]
-    private array $roles = [];
+    #[ORM\Column(length: 50, options: ['default' => ['ROLE_USER']])]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
+    #[Assert\Choice(
+        choices: ['ROLE_ADMIN', 'ROLE_USER'],
+        message: 'Spécifier le bon role utilisateur'
+    )]
+    private array $roles = ['ROLE_USER'];
 
     /**
      * @var string The hashed password
      */
-    #[ORM\Column]
+    #[ORM\Column(length: 4)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     private ?string $password = null;
 
     public function getId(): ?int

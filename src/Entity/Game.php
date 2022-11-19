@@ -4,15 +4,15 @@ namespace App\Entity;
 
 use App\Repository\GameRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Groups;
-
-//use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
-
 use Hateoas\Configuration\Annotation as Hateoas;
+
+// use Symfony\Component\Serializer\Annotation\Groups;
+
 /**
  * @Hateoas\Relation(
  *   "self",
@@ -36,7 +36,7 @@ class Game
 
     #[ORM\Column(length: 255)]
     #[Groups(['this_game', 'all_games', 'this_comment', 'all_comment'])]
-    #[Assert\NotBlank(message: "le jeux doit avoir un nom")]
+    #[Assert\NotBlank(message: "le jeux doit avoir un nom", groups: ["create","update"])]
     #[Assert\NotNull]
     private ?string $gameName = null;
 
@@ -50,9 +50,8 @@ class Game
     #[Groups(['this_game', 'all_games', 'this_comment', 'all_comment'])]
     private ?\DateTimeInterface $gameLaunchDate = null;
 
-    #[ORM\Column(length: 512, nullable: true)]
+    #[ORM\Column(length: 512, nullable: true, options: ['default' => null])]
     #[Groups(['this_game', 'all_games', 'this_comment', 'all_comment'])]
-    #[Assert\NotBlank(message: "la description ne doit pas être vide")]
     private ?string $gameDescription = null;
 
     #[ORM\Column(length: 100)]
@@ -61,13 +60,13 @@ class Game
     private ?string $gamePlatform = null;
 
     #[ORM\Column(length: 10, options: ['default' => 'on'])]
-    #[Assert\NotBlank(message: "le status doit être déclaré")]
+    #[Assert\NotBlank(message: "le status doit être déclaré", groups: ["create","update"])]
     #[Assert\NotNull]
     #[Assert\Choice(
         choices: ['on', 'off'],
         message: 'Active ou désactive le msg'
     )]
-    private ?string $status = null;
+    private ?string $status = 'on';
 
     #[ORM\OneToMany(mappedBy: 'f_commentGameId', targetEntity: Comment::class, orphanRemoval: true)]
     #[Groups(['all_games'])]
@@ -75,12 +74,12 @@ class Game
 
     #[ORM\Column(length: 100, options: ['default' => 'RPG'])]
     #[Groups(['this_game', 'all_games', 'this_comment', 'all_comment'])]
-    #[Assert\NotBlank(message: "le jeux doit avoir un genre non vide")]
+    #[Assert\NotBlank(message: "le genre doit être déclaré", groups: ["create","update"])]
     #[Assert\Choice(
         choices: ['RPG', 'MMO', 'HACK-AND-SLASH', 'FPS', 'BATTLE-ROYAL', 'ADVENTURE', 'RACE', 'MUSIC', 'SIMULATION', 'SPORT'],
         message: 'Prend un genre dans une liste défini'
     )]
-    private ?string $genre = null;
+    private ?string $genre = 'RPG';
 
     public function __construct()
     {

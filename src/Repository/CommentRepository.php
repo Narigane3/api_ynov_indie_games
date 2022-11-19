@@ -65,6 +65,24 @@ class CommentRepository extends ServiceEntityRepository
 //    }
 
     /**
+     * Return all comment has status on if status = 'on' by pagination
+     *
+     * @param int $page [page number of result]
+     * @param int $limit [limit of result on response]
+     * @return array
+     */
+    public function findAllByPagination(int $page, int $limit)
+    {
+        return $this->createQueryBuilder('s')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->where('s.status = :commentStatus')
+            ->setParameter('commentStatus', 'on')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Return all comment has status on if status = 'on'
      *
      * @param int $page [page number of result]

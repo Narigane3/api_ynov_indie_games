@@ -97,12 +97,16 @@ class GameRepository extends ServiceEntityRepository
      * Return random game by genre
      *
      * @param string|null $genre [video game genre]
-     * @return array|bool [return gamme object or false]
+     * @return Game|null [return entity game object]
      */
-    public function randomGame(string|null $genre = 'RPG'): array|bool
+    public function randomGame(string|null $genre = 'RPG'): ?Game
     {
-        $qb = $this->createQueryBuilder('s');
-        $qb->where("s.genre = '$genre'");
-        return $qb->getQuery()->getResult();
+        return $this->createQueryBuilder('g')
+            ->where('g.genre = :gameGenre')
+            ->setParameter('gameGenre', $genre)
+            ->orderBy('RAND()')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }
